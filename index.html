@@ -19,14 +19,14 @@
         /* CV container styling to mimic A4 width */
         #cv-output {
             background-color: white;
-            padding: 0; /* REMOVED PADDING to allow banners to span full width */
+            padding: 0; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
             min-height: 11in; /* Approximate A4 height */
         }
 
         /* Hides the editor and print button when printing */
         @media print {
-            /* NEW: Resetting margins and padding on body and wrapper to prevent grey border */
+            /* Resetting margins and padding on body and wrapper to prevent grey border */
             body {
                 margin: 0;
                 padding: 0;
@@ -68,6 +68,21 @@
             padding-left: 0.75in;
             padding-right: 0.75in;
         }
+
+        /* Drag and Drop styles */
+        .dragging {
+            opacity: 0.5;
+            border: 2px dashed #3b82f6; /* Blue border for visual feedback */
+        }
+
+        /* Fixes issue where indicator appears on the target itself */
+        .drop-target-indicator {
+            height: 4px;
+            background-color: #3b82f6;
+            border-radius: 9999px;
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -80,13 +95,23 @@
             <p class="text-sm text-gray-500 mb-6">Enter your details below. The preview updates instantly.</p>
 
             <form id="cv-form" class="space-y-4">
+                
+                <!-- Section Ordering and Visibility Control -->
+                <fieldset class="border border-gray-200 p-4 rounded-md bg-yellow-50/50">
+                    <legend class="text-md font-semibold text-gray-700 px-1">Section Order & Visibility</legend>
+                    <p class="text-xs text-gray-600 mb-2">Check to enable, drag to reorder.</p>
+                    <div id="section-order-list" class="space-y-2">
+                        <!-- Draggable list items for sections will be rendered here -->
+                    </div>
+                </fieldset>
+
                 <!-- Personal Info -->
                 <fieldset class="border border-gray-200 p-4 rounded-md">
                     <legend class="text-md font-semibold text-gray-700 px-1">Personal Details</legend>
-                    <input type="text" id="name" placeholder="Full Name (e.g., JANE DOE)" class="w-full p-2 border rounded-md" value="JANE DOE" required>
-                    <input type="text" id="email" placeholder="Email (e.g., jane.doe@example.com)" class="w-full p-2 border rounded-md" value="jane.doe@example.com">
-                    <input type="text" id="phone" placeholder="Phone (e.g., (555) 123-4567)" class="w-full p-2 border rounded-md" value="(555) 123-4567">
-                    <input type="text" id="address" placeholder="Address (e.g., San Francisco, CA 94107)" class="w-full p-2 border rounded-md" value="San Francisco, CA 94107">
+                    <input type="text" id="name" placeholder="Full Name (e.g., JANE DOE)" class="w-full p-2 border rounded-md" value="ELEANOR SMITH" required>
+                    <input type="text" id="email" placeholder="Email (e.g., jane.doe@example.com)" class="w-full p-2 border rounded-md" value="eleanor.smith@example.co.uk">
+                    <input type="text" id="phone" placeholder="Phone (e.g., (555) 123-4567)" class="w-full p-2 border rounded-md" value="07700 900000">
+                    <input type="text" id="address" placeholder="Address (e.g., San Francisco, CA 94107)" class="w-full p-2 border rounded-md" value="Leeds, West Yorkshire, LS1 3AB">
                 </fieldset>
 
                 <!-- Summary -->
@@ -103,6 +128,15 @@
                     </div>
                     <button type="button" id="add-skill-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Skill</button>
                 </fieldset>
+                
+                <!-- Work Experience -->
+                <fieldset class="border border-gray-200 p-4 rounded-md">
+                    <legend class="text-md font-semibold text-gray-700 px-1">Work Experience</legend>
+                    <div id="experience-container" class="space-y-3">
+                        <!-- Dynamic experience will be added here -->
+                    </div>
+                    <button type="button" id="add-experience-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Experience</button>
+                </fieldset>
 
                 <!-- Education -->
                 <fieldset class="border border-gray-200 p-4 rounded-md">
@@ -111,6 +145,15 @@
                         <!-- Dynamic education will be added here -->
                     </div>
                     <button type="button" id="add-education-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Education</button>
+                </fieldset>
+
+                <!-- References (NEW SECTION) -->
+                <fieldset class="border border-gray-200 p-4 rounded-md">
+                    <legend class="text-md font-semibold text-gray-700 px-1">References</legend>
+                    <div id="references-container" class="space-y-3">
+                        <!-- Dynamic references will be added here -->
+                    </div>
+                    <button type="button" id="add-reference-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Reference</button>
                 </fieldset>
 
                 <!-- Hobbies -->
@@ -134,156 +177,154 @@
 
         <!-- CV Preview (Main content area) -->
         <div class="lg:col-span-2 flex justify-center">
-            <div id="cv-output" class="w-full max-w-3xl rounded-lg">
+            <!-- Renamed element to keep it simple, the contents will be dynamic -->
+            <div id="cv-output" class="w-full max-w-3xl rounded-lg"> 
 
                 <!-- 1. NAME AND CONTACT - NEW BANNER STRUCTURE -->
                 <header id="cv-header" class="mb-0">
                     <!-- Top Banner: Name (Light blue/grey background) -->
-                    <!-- UPDATED COLOR: #CFE2EC -->
                     <div class="p-6 pt-10 text-center" style="background-color: #CFE2EC;">
                         <h1 id="cv-name" class="text-4xl sm:text-5xl font-extrabold tracking-wide text-gray-900">JANE DOE</h1>
                     </div>
 
                     <!-- Bottom Banner: Contact Details (Dark gray background) -->
-                    <!-- UPDATED COLOR: #474747 -->
                     <div class="p-3 text-white" style="background-color: #474747;">
-                        <!-- UPDATED: Using flex justify-between and explicit padding (px-12 for approx. 0.75in) to align items left, center, and right. -->
-                        <!-- ADDED FONT-SEMIBOLD for bolder text -->
-                        <div id="cv-contact" class="flex justify-between items-center text-sm font-semibold px-12">
+                        <!-- CHANGED: flex justify-between to flex-wrap justify-center with gaps for flexibility -->
+                        <div id="cv-contact" class="flex flex-wrap justify-center items-center text-sm font-semibold px-4 md:px-12 gap-x-6 gap-y-2">
                             
-                            <!-- Email (Left-aligned) -->
-                            <div id="cv-email-wrapper" class="flex items-center space-x-2">
-                                <!-- Font Awesome Email Icon -->
-                                <i class="fa fa-envelope text-blue-300 text-lg"></i>
-                                <span id="cv-email">jane.doe@example.com</span>
+                            <!-- Email (Flexible) -->
+                            <div id="cv-email-wrapper" class="flex items-center space-x-2 min-w-0">
+                                <!-- min-w-0 prevents overflow on long content -->
+                                <i class="fa fa-envelope text-blue-300 text-lg flex-shrink-0"></i>
+                                <!-- Use inline-block to allow the text to break onto a new line if necessary -->
+                                <span id="cv-email" class="inline-block break-words">jane.doe@example.com</span>
                             </div>
 
-                            <!-- Phone (Center-aligned) -->
-                            <div id="cv-phone-wrapper" class="flex items-center space-x-2">
-                                <!-- Font Awesome Phone Icon -->
-                                <i class="fa fa-phone text-blue-300 text-lg"></i>
-                                <span id="cv-phone">(555) 123-4567</span>
+                            <!-- Phone (Flexible) -->
+                            <div id="cv-phone-wrapper" class="flex items-center space-x-2 min-w-0">
+                                <i class="fa fa-phone text-blue-300 text-lg flex-shrink-0"></i>
+                                <span id="cv-phone" class="inline-block break-words">(555) 123-4567</span>
                             </div>
 
-                            <!-- Address (Right-aligned) -->
-                            <div id="cv-address-wrapper" class="flex items-center space-x-2">
-                                <!-- Font Awesome Location Icon -->
-                                <i class="fa fa-map-marker text-blue-300 text-lg"></i>
-                                <span id="cv-address">San Francisco, CA 94107</span>
+                            <!-- Address (Flexible) -->
+                            <div id="cv-address-wrapper" class="flex items-center space-x-2 min-w-0">
+                                <i class="fa fa-map-marker text-blue-300 text-lg flex-shrink-0"></i>
+                                <span id="cv-address" class="inline-block break-words">San Francisco, CA 94107</span>
                             </div>
                         </div>
                     </div>
                 </header>
 
-                <!-- 2. SUMMARY (TITLE ADDED HERE) -->
-                <section id="cv-summary" class="mb-8 pt-6 cv-section-content">
-                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">SUMMARY</h2>
-                    <p class="pt-2 text-base leading-relaxed text-gray-700">A highly motivated and adaptable recent graduate seeking an entry-level position to apply academic knowledge and keen problem-solving skills in a professional environment. Eager to contribute to team success while developing practical experience.</p>
-                </section>
-
-                <!-- 3. SKILLS -->
-                <section id="cv-skills" class="mb-8 cv-section-content">
-                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">SKILLS</h2>
-                    <ul id="skills-list" class="list-disc list-outside ml-5 space-y-1 text-base text-gray-700">
-                        <li>Strong Communication</li>
-                        <li>Time Management</li>
-                        <li>Data Analysis (Basic)</li>
-                        <li>Software Proficiency (MS Office, Figma)</li>
-                    </ul>
-                </section>
-
-                <!-- 4. EDUCATION -->
-                <section id="cv-education" class="mb-8 cv-section-content">
-                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">EDUCATION</h2>
-                    <div id="education-list" class="space-y-4 text-base text-gray-700">
-                        <!-- Example education item -->
-                        <div class="education-item flex flex-col sm:flex-row justify-between">
-                            <div class="flex-1">
-                                <p class="font-semibold">B.A. in Communications</p>
-                            <p class="text-sm">City University</p>
-                            </div>
-                            <p class="w-20 text-right sm:text-left text-sm font-medium">2024</p>
-                        </div>
-                        <div class="education-item flex flex-col sm:flex-row justify-between">
-                            <div class="flex-1">
-                                <p class="font-semibold">High School Diploma</p>
-                                <p class="text-sm">Central High School</p>
-                            </div>
-                            <p class="w-20 text-right sm:text-left text-sm font-medium">2020</p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 5. HOBBIES AND INTERESTS -->
-                <section id="cv-hobbies" class="cv-section-content">
-                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">HOBBIES AND INTERESTS</h2>
-                    <ul id="hobbies-list" class="list-disc list-outside ml-5 space-y-1 text-base text-gray-700">
-                        <li>Photography</li>
-                        <li>Hiking and Outdoors</li>
-                        <li>Volunteering at Local Shelter</li>
-                    </ul>
-                </section>
+                <!-- CV BODY WILL BE RENDERED HERE DYNAMICALLY -->
+                <div id="cv-body">
+                    <!-- Dynamic sections go here -->
+                </div>
 
             </div>
         </div>
     </div>
 
     <script>
+        // Data model
         const cvData = {
-            name: "JANE DOE",
-            email: "jane.doe@example.com",
-            phone: "(555) 123-4567",
-            address: "San Francisco, CA 94107",
+            // Updated to British examples
+            name: "ELEANOR SMITH",
+            email: "eleanor.smith@example.co.uk",
+            // TEST LONG EMAIL: "eleanor.smith.is.a.very.long.email.address.example@long-domain-name.co.uk",
+            phone: "07700 900000",
+            address: "Leeds, West Yorkshire, LS1 3AB", // UK Postcode format
+            // TEST LONG ADDRESS: "A very long multi-line street address, A really long village name, Leeds, West Yorkshire, LS1 3AB", 
             summary: "A highly motivated and adaptable recent graduate seeking an entry-level position to apply academic knowledge and keen problem-solving skills in a professional environment. Eager to contribute to team success while developing practical experience.",
-            skills: ["Strong Communication", "Time Management", "Data Analysis (Basic)", "Software Proficiency (MS Office, Figma)"],
-            education: [
-                { year: "2024", details: "B.A. in Communications", institution: "City University" },
-                { year: "2020", details: "High School Diploma", institution: "Central High School" }
+            skills: ["Strong Communication", "Time Management", "Data Analysis (Basic)", "Software Proficiency (Microsoft Office, Adobe Suite)"],
+            
+            experience: [
+                {
+                    dates: "Jan 2023 - Dec 2023",
+                    title: "Sales Assistant", // British equivalent of Retail Associate
+                    company: "Waterstone's, Leeds Branch", 
+                    details: ["Managed inventory and restocked shelves efficiently.", "Provided excellent customer service and handled cash transactions."]
+                }
             ],
-            hobbies: ["Photography", "Hiking and Outdoors", "Volunteering at Local Shelter"]
+
+            education: [
+                { year: "2024", details: "BSc (Hons) in Computer Science", institution: "University of Leeds" },
+                { year: "2020", details: "A-Levels (Maths, Physics, Geography)", institution: "Guiseley High School" } 
+            ],
+            hobbies: ["Photography", "Hiking and Outdoors", "Volunteering at Local Animal Shelter"],
+            
+            // NEW: References Data - added phone
+            references: [
+                {
+                    name: "Dr. Alistair Finch", 
+                    title: "Head of Computing Department",
+                    company: "University of Leeds",
+                    email: "a.finch@leeds.ac.uk",
+                    phone: "0113 555 1234", // UK landline format
+                }
+            ],
+
+            // Section Visibility State
+            sectionVisibility: {
+                summary: true,
+                experience: true,
+                skills: true,
+                education: true,
+                hobbies: true,
+                references: false, // Defaulting references to off
+            }
         };
 
-        const elements = {
-            // Inputs
-            nameInput: document.getElementById('name'),
-            emailInput: document.getElementById('email'),
-            phoneInput: document.getElementById('phone'),
-            addressInput: document.getElementById('address'),
-            summaryInput: document.getElementById('summary'),
-            addSkillBtn: document.getElementById('add-skill-btn'),
-            addEducationBtn: document.getElementById('add-education-btn'),
-            addHobbyBtn: document.getElementById('add-hobby-btn'),
 
-            // CV Output Elements
-            cvName: document.getElementById('cv-name'),
-            cvEmail: document.getElementById('cv-email'),
-            cvPhone: document.getElementById('cv-phone'),
-            cvAddress: document.getElementById('cv-address'),
-            cvSummary: document.getElementById('cv-summary').querySelector('p'),
-            skillsContainer: document.getElementById('skills-container'),
-            skillsList: document.getElementById('skills-list'),
-            educationContainer: document.getElementById('education-container'),
-            educationList: document.getElementById('education-list'),
-            hobbiesContainer: document.getElementById('hobbies-container'),
-            hobbiesList: document.getElementById('hobbies-list'),
+        // --- SECTION RENDERING FUNCTIONS ---
+
+        // 1. SUMMARY
+        const renderSummary = () => `
+            <section id="cv-summary" class="mb-8 pt-6 cv-section-content">
+                <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">${cvLayout.find(s => s.id === 'summary').title}</h2>
+                <p class="pt-2 text-base leading-relaxed text-gray-700">${cvData.summary || 'Your professional summary goes here...'}</p>
+            </section>
+        `;
+        
+        // 2. SKILLS
+        const renderSkills = () => {
+            const listItems = cvData.skills.map(skill => `<li>${skill}</li>`).join('');
+            return `
+                <section id="cv-skills" class="mb-8 cv-section-content">
+                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">${cvLayout.find(s => s.id === 'skills').title}</h2>
+                    <ul id="skills-list" class="list-disc list-outside ml-5 space-y-1 text-base text-gray-700">
+                        ${listItems}
+                    </ul>
+                </section>
+            `;
         };
 
-        // --- Core Rendering Function ---
-        const renderCV = () => {
-            // 1. Personal Info
-            elements.cvName.textContent = cvData.name.toUpperCase() || 'YOUR NAME';
-            elements.cvEmail.textContent = cvData.email || 'your.email@example.com';
-            elements.cvPhone.textContent = cvData.phone || 'Your Phone Number';
-            elements.cvAddress.textContent = cvData.address || 'Your Address';
-            elements.cvSummary.textContent = cvData.summary || 'Your professional summary goes here...';
+        // 3. WORK EXPERIENCE
+        const renderExperience = () => {
+            const experienceItems = cvData.experience.map(exp => `
+                <div class="experience-item mb-3">
+                    <div class="flex justify-between items-start">
+                        <p class="font-semibold text-gray-800">${exp.title} - ${exp.company}</p>
+                        <p class="text-sm font-medium text-gray-600">${exp.dates}</p>
+                    </div>
+                    <ul class="list-disc list-outside ml-5 text-sm text-gray-700 mt-1">
+                        ${exp.details.map(detail => `<li>${detail}</li>`).join('')}
+                    </ul>
+                </div>
+            `).join('');
 
-            // 2. Skills
-            elements.skillsList.innerHTML = cvData.skills.map(skill =>
-                `<li>${skill}</li>`
-            ).join('');
+            return `
+                <section id="cv-experience" class="mb-8 cv-section-content">
+                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">${cvLayout.find(s => s.id === 'experience').title}</h2>
+                    <div id="experience-list" class="space-y-4 pt-2">
+                        ${experienceItems}
+                    </div>
+                </section>
+            `;
+        };
 
-            // 3. Education
-            elements.educationList.innerHTML = cvData.education.map(edu => `
+        // 4. EDUCATION
+        const renderEducation = () => {
+            const educationItems = cvData.education.map(edu => `
                 <div class="education-item flex flex-col sm:flex-row justify-between">
                     <div class="flex-1">
                         <p class="font-semibold">${edu.details}</p>
@@ -295,12 +336,249 @@
                 </div>
             `).join('');
 
-            // 4. Hobbies
-            elements.hobbiesList.innerHTML = cvData.hobbies.map(hobby =>
-                `<li>${hobby}</li>`
-            ).join('');
+            return `
+                <section id="cv-education" class="mb-8 cv-section-content">
+                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">${cvLayout.find(s => s.id === 'education').title}</h2>
+                    <div id="education-list" class="space-y-4 pt-2 text-base text-gray-700">
+                        ${educationItems}
+                    </div>
+                </section>
+            `;
         };
 
+        // 5. HOBBIES
+        const renderHobbies = () => {
+            const listItems = cvData.hobbies.map(hobby => `<li>${hobby}</li>`).join('');
+            return `
+                <section id="cv-hobbies" class="mb-8 cv-section-content">
+                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">${cvLayout.find(s => s.id === 'hobbies').title}</h2>
+                    <ul id="hobbies-list" class="list-disc list-outside ml-5 space-y-1 text-base text-gray-700">
+                        ${listItems}
+                    </ul>
+                </section>
+            `;
+        };
+
+        // 6. REFERENCES (NEW)
+        const renderReferences = () => {
+            let referenceContent;
+            
+            if (cvData.references.length === 0) {
+                // If the user has explicitly enabled the section but provided no references
+                referenceContent = `<p class="pt-2 text-base leading-relaxed text-gray-700">References available upon request.</p>`;
+            } else {
+                referenceContent = cvData.references.map(ref => `
+                    <div class="reference-item mb-3">
+                        <p class="font-semibold text-gray-800">${ref.name}</p>
+                        <p class="text-sm text-gray-600">${ref.title}${ref.company ? ', ' + ref.company : ''}</p>
+                        <p class="text-sm text-gray-600">${ref.email}</p>
+                        ${ref.phone ? `<p class="text-sm text-gray-600">${ref.phone}</p>` : ''}
+                    </div>
+                `).join('');
+            }
+            
+            return `
+                <section id="cv-references" class="mb-8 cv-section-content">
+                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">${cvLayout.find(s => s.id === 'references').title}</h2>
+                    <div id="references-list" class="space-y-4 pt-2">
+                        ${referenceContent}
+                    </div>
+                </section>
+            `;
+        };
+        
+        // --- Core Rendering Function ---
+        const renderCV = () => {
+            // 1. Personal Info (static)
+            elements.cvName.textContent = cvData.name.toUpperCase() || 'YOUR NAME';
+            elements.cvEmail.textContent = cvData.email || 'your.email@example.com';
+            elements.cvPhone.textContent = cvData.phone || 'Your Phone Number';
+            elements.cvAddress.textContent = cvData.address || 'Your Address';
+
+            // 2. Dynamic CV Body Sections
+            // Filter cvLayout based on visibility state before rendering
+            elements.cvBody.innerHTML = cvLayout
+                .filter(section => cvData.sectionVisibility[section.id])
+                .map(section => section.render()).join('');
+        };
+
+
+        // Defines the order and content to be rendered in the CV body
+        const cvLayout = [
+            { id: 'summary', title: 'SUMMARY', render: renderSummary },
+            { id: 'experience', title: 'WORK EXPERIENCE', render: renderExperience }, 
+            { id: 'skills', title: 'SKILLS', render: renderSkills },
+            { id: 'education', title: 'EDUCATION', render: renderEducation },
+            { id: 'references', title: 'REFERENCES', render: renderReferences }, 
+            { id: 'hobbies', title: 'HOBBIES AND INTERESTS', render: renderHobbies },
+        ];
+
+        // Global variable to track the section being dragged
+        let draggedSectionId = null;
+
+
+        // DOM element references
+        const elements = {
+            // Inputs
+            nameInput: document.getElementById('name'),
+            emailInput: document.getElementById('email'),
+            phoneInput: document.getElementById('phone'),
+            addressInput: document.getElementById('address'),
+            summaryInput: document.getElementById('summary'),
+            addSkillBtn: document.getElementById('add-skill-btn'),
+            addExperienceBtn: document.getElementById('add-experience-btn'), 
+            addEducationBtn: document.getElementById('add-education-btn'),
+            addHobbyBtn: document.getElementById('add-hobby-btn'),
+            addReferenceBtn: document.getElementById('add-reference-btn'), 
+            sectionOrderList: document.getElementById('section-order-list'),
+
+            // CV Output Elements
+            cvName: document.getElementById('cv-name'),
+            cvEmail: document.getElementById('cv-email'),
+            cvPhone: document.getElementById('cv-phone'),
+            cvAddress: document.getElementById('cv-address'),
+            cvBody: document.getElementById('cv-body'), 
+            skillsContainer: document.getElementById('skills-container'),
+            experienceContainer: document.getElementById('experience-container'), 
+            educationContainer: document.getElementById('education-container'),
+            hobbiesContainer: document.getElementById('hobbies-container'),
+            referencesContainer: document.getElementById('references-container'), 
+        };
+
+        // --- DRAG AND DROP & VISIBILITY LOGIC ---
+
+        const initSectionOrderUI = () => {
+            elements.sectionOrderList.innerHTML = '';
+
+            cvLayout.forEach(section => {
+                const item = document.createElement('div');
+                // Added focus:ring for better accessibility
+                item.className = 'section-order-item flex items-center justify-between bg-gray-100 p-3 rounded-lg border border-gray-300 shadow-sm hover:bg-gray-200 transition duration-100 cursor-move focus:ring-2 focus:ring-blue-500';
+                item.draggable = true;
+                item.dataset.id = section.id;
+                
+                // Added visibility checkbox to the draggable item
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <input type="checkbox" 
+                               id="toggle-${section.id}" 
+                               data-id="${section.id}" 
+                               ${cvData.sectionVisibility[section.id] ? 'checked' : ''} 
+                               class="toggle-visibility w-4 h-4 text-blue-600 bg-gray-100 border-gray-400 rounded focus:ring-blue-500 cursor-pointer">
+                        <label for="toggle-${section.id}" class="font-medium text-gray-700 cursor-pointer">${section.title}</label>
+                    </div>
+                    <i class="fa fa-arrows text-gray-400"></i>
+                `;
+
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('dragleave', handleDragLeave);
+                item.addEventListener('drop', handleDrop);
+                item.addEventListener('dragend', handleDragEnd);
+
+                // Attach visibility toggle listener
+                item.querySelector('.toggle-visibility').addEventListener('change', handleVisibilityToggle);
+
+                elements.sectionOrderList.appendChild(item);
+            });
+        };
+
+        const handleVisibilityToggle = (e) => {
+            const sectionId = e.target.dataset.id;
+            cvData.sectionVisibility[sectionId] = e.target.checked;
+            renderCV();
+        };
+
+        const handleDragStart = (e) => {
+            // Set the ID of the section being dragged
+            draggedSectionId = e.target.closest('.section-order-item').dataset.id;
+            e.target.closest('.section-order-item').classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedSectionId);
+        };
+
+        const removeIndicators = () => {
+            elements.sectionOrderList.querySelectorAll('.drop-target-indicator').forEach(el => el.remove());
+        }
+
+        const handleDragOver = (e) => {
+            e.preventDefault(); // Necessary to allow drop
+            removeIndicators();
+
+            const draggingElement = document.querySelector('.dragging');
+            const targetElement = e.target.closest('.section-order-item');
+
+            if (!targetElement || targetElement === draggingElement) return;
+
+            // Determine if we should insert before or after the target
+            const rect = targetElement.getBoundingClientRect();
+            const isBefore = e.clientY < rect.top + rect.height / 2;
+
+            // Create and insert the visual indicator
+            const indicator = document.createElement('div');
+            indicator.className = 'drop-target-indicator';
+
+            if (isBefore) {
+                elements.sectionOrderList.insertBefore(indicator, targetElement);
+            } else {
+                elements.sectionOrderList.insertBefore(indicator, targetElement.nextSibling);
+            }
+            
+            e.dataTransfer.dropEffect = 'move';
+        };
+
+        const handleDragLeave = (e) => {
+            removeIndicators();
+        };
+
+        const handleDrop = (e) => {
+            e.preventDefault();
+            removeIndicators();
+            
+            const dropTargetElement = e.target.closest('.section-order-item');
+            
+            if (!dropTargetElement || dropTargetElement.dataset.id === draggedSectionId) return;
+
+            const draggedId = draggedSectionId;
+            const targetId = dropTargetElement.dataset.id;
+
+            // Find indices in the cvLayout array
+            const draggedIndex = cvLayout.findIndex(section => section.id === draggedId);
+            let targetIndex = cvLayout.findIndex(section => section.id === targetId);
+
+            if (draggedIndex === -1 || targetIndex === -1) return;
+
+            // 1. Remove the dragged item
+            const [draggedItem] = cvLayout.splice(draggedIndex, 1);
+
+            // 2. Re-calculate insertion index based on mouse position relative to the target
+            const rect = dropTargetElement.getBoundingClientRect();
+            const isBefore = e.clientY < rect.top + rect.height / 2;
+
+            if (!isBefore) {
+                // If dropping AFTER the target, the insertion index should be one greater than the target's current index
+                const newTargetIndex = cvLayout.findIndex(section => section.id === targetId);
+                targetIndex = newTargetIndex + 1;
+            } else {
+                 // If dropping BEFORE the target
+                 targetIndex = cvLayout.findIndex(section => section.id === targetId);
+            }
+
+            // 3. Insert the dragged item at the new position
+            cvLayout.splice(targetIndex, 0, draggedItem);
+
+            // Re-render both the ordering UI and the CV
+            initSectionOrderUI();
+            renderCV();
+        };
+
+        const handleDragEnd = (e) => {
+            // Cleanup state and remove dragging class
+            e.target.closest('.section-order-item').classList.remove('dragging');
+            removeIndicators();
+            draggedSectionId = null;
+        };
+        
         // --- Data Initialization and Update ---
 
         // Function to initialize input fields with existing data
@@ -313,8 +591,10 @@
 
             // Render dynamic sections' input fields
             renderDynamicInputs('skill', cvData.skills, elements.skillsContainer);
+            renderDynamicInputs('experience', cvData.experience, elements.experienceContainer); 
             renderDynamicInputs('education', cvData.education, elements.educationContainer);
             renderDynamicInputs('hobby', cvData.hobbies, elements.hobbiesContainer);
+            renderDynamicInputs('reference', cvData.references, elements.referencesContainer); 
         };
 
         // General function to create input fields for dynamic arrays
@@ -322,9 +602,13 @@
             container.innerHTML = '';
             dataArray.forEach((item, index) => {
                 const wrapper = document.createElement('div');
-                wrapper.className = `flex space-x-2 ${type}-item-wrapper mb-2`; /* Added mb-2 for spacing */
+                wrapper.className = `flex space-x-2 ${type}-item-wrapper mb-2`; 
+                let itemWrapper = document.createElement('div');
+                itemWrapper.className = 'w-full space-y-1';
+
 
                 if (type === 'skill' || type === 'hobby') {
+                    // Single string item (Skill or Hobby)
                     const input = document.createElement('input');
                     input.type = 'text';
                     input.placeholder = type === 'skill' ? 'Skill description' : 'Hobby description';
@@ -333,27 +617,49 @@
                     input.dataset.index = index;
                     input.dataset.type = type;
                     input.addEventListener('input', handleDynamicInput);
-                    wrapper.appendChild(input);
+                    itemWrapper = input; // Use input directly as wrapper
                 } else if (type === 'education') {
                     // Education requires three inputs
-                    const eduWrapper = document.createElement('div');
-                    eduWrapper.className = 'w-full space-y-1';
-                    eduWrapper.innerHTML = `
+                    itemWrapper.innerHTML = `
                         <input type="text" placeholder="Year (e.g., 2025)" class="w-full p-2 border rounded-md text-sm" data-field="year" value="${item.year}">
-                        <input type="text" placeholder="Qualification (e.g., A-Levels, Maths)" class="w-full p-2 border rounded-md text-sm" data-field="details" value="${item.details}">
-                        <input type="text" placeholder="Institution (e.g., Guiseley High School, Leeds)" class="w-full p-2 border rounded-md text-sm" data-field="institution" value="${item.institution}">
+                        <input type="text" placeholder="Qualification (e.g., BSc (Hons) in History)" class="w-full p-2 border rounded-md text-sm" data-field="details" value="${item.details}">
+                        <input type="text" placeholder="Institution (e.g., University of Leeds)" class="w-full p-2 border rounded-md text-sm" data-field="institution" value="${item.institution}">
                     `;
-                    Array.from(eduWrapper.querySelectorAll('input')).forEach(input => {
+                } else if (type === 'experience') {
+                    // Work Experience requires object inputs + a details array
+                    itemWrapper.innerHTML = `
+                        <input type="text" placeholder="Dates (e.g., Jan 2023 - Dec 2023)" class="w-full p-2 border rounded-md text-sm" data-field="dates" value="${item.dates}">
+                        <input type="text" placeholder="Job Title (e.g., Sales Assistant)" class="w-full p-2 border rounded-md text-sm" data-field="title" value="${item.title}">
+                        <input type="text" placeholder="Company Name" class="w-full p-2 border rounded-md text-sm" data-field="company" value="${item.company}">
+                        <textarea placeholder="Job Details (one per line, will be bullet points)" rows="3" class="w-full p-2 border rounded-md text-sm" data-field="details" data-details-textarea="true">${item.details.join('\n')}</textarea>
+                    `;
+                } else if (type === 'reference') {
+                    // References requires four inputs
+                    itemWrapper.innerHTML = `
+                        <input type="text" placeholder="Reference Name (e.g., Dr. Alistair Finch)" class="w-full p-2 border rounded-md text-sm" data-field="name" value="${item.name}">
+                        <input type="text" placeholder="Reference Title (e.g., Head of Department)" class="w-full p-2 border rounded-md text-sm" data-field="title" value="${item.title}">
+                        <input type="text" placeholder="Reference Company/Institution" class="w-full p-2 border rounded-md text-sm" data-field="company" value="${item.company}">
+                        <input type="text" placeholder="Reference Email" class="w-full p-2 border rounded-md text-sm" data-field="email" value="${item.email}">
+                        <input type="text" placeholder="Reference Phone (e.g., 0113 555 1234)" class="w-full p-2 border rounded-md text-sm" data-field="phone" value="${item.phone || ''}">
+                    `;
+                }
+
+                // Attach listeners to all inputs within the item wrapper
+                if (type === 'skill' || type === 'hobby') {
+                     // Listener already attached if it's a single input
+                } else {
+                    Array.from(itemWrapper.querySelectorAll('input, textarea')).forEach(input => {
                         input.dataset.index = index;
                         input.dataset.type = type;
                         input.addEventListener('input', handleDynamicInput);
                     });
-                    wrapper.appendChild(eduWrapper);
                 }
+                wrapper.appendChild(itemWrapper);
+
 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.type = 'button';
-                deleteBtn.className = 'bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition duration-150 w-8 h-8 text-sm flex items-center justify-center';
+                deleteBtn.className = 'bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition duration-150 w-8 h-8 text-sm flex items-center justify-center shrink-0';
                 deleteBtn.textContent = 'X';
                 deleteBtn.dataset.index = index;
                 deleteBtn.dataset.type = type;
@@ -371,16 +677,25 @@
             renderCV();
         };
 
-        // Handle input for dynamic array fields (Skills, Education, Hobbies)
+        // Handle input for dynamic array fields 
         const handleDynamicInput = (e) => {
-            const { type, index, field } = e.target.dataset;
+            const { type, index, field, detailsTextarea } = e.target.dataset;
             const value = e.target.value;
             const idx = parseInt(index);
+            const arrayKey = type + (type === 'reference' ? 's' : (type === 'experience' || type === 'education' ? '' : 's'));
 
             if (type === 'skill' || type === 'hobby') {
-                cvData[type + 's'][idx] = value; // Update the string directly
+                cvData[type + 's'][idx] = value; 
             } else if (type === 'education') {
-                cvData.education[idx][field] = value; // Update the object property
+                cvData.education[idx][field] = value; 
+            } else if (type === 'experience') {
+                if (detailsTextarea) {
+                    cvData.experience[idx].details = value.split('\n').filter(line => line.trim() !== '');
+                } else {
+                    cvData.experience[idx][field] = value; 
+                }
+            } else if (type === 'reference') {
+                cvData.references[idx][field] = value;
             }
 
             renderCV();
@@ -397,6 +712,12 @@
             } else if (type === 'hobby') {
                 cvData.hobbies.push("New Hobby/Interest");
                 renderDynamicInputs('hobby', cvData.hobbies, elements.hobbiesContainer);
+            } else if (type === 'experience') {
+                cvData.experience.push({ dates: "Start - End", title: "Job Title", company: "Company Name", details: ["Responsibility one", "Responsibility two"] });
+                renderDynamicInputs('experience', cvData.experience, elements.experienceContainer);
+            } else if (type === 'reference') {
+                cvData.references.push({ name: "Reference Name", title: "Reference Title", company: "Company/Institution", email: "contact@reference.com", phone: "" });
+                renderDynamicInputs('reference', cvData.references, elements.referencesContainer);
             }
             renderCV();
         };
@@ -415,6 +736,12 @@
             } else if (type === 'hobby') {
                 cvData.hobbies.splice(idx, 1);
                 renderDynamicInputs('hobby', cvData.hobbies, elements.hobbiesContainer);
+            } else if (type === 'experience') {
+                cvData.experience.splice(idx, 1);
+                renderDynamicInputs('experience', cvData.experience, elements.experienceContainer);
+            } else if (type === 'reference') {
+                cvData.references.splice(idx, 1);
+                renderDynamicInputs('reference', cvData.references, elements.referencesContainer);
             }
             renderCV();
         };
@@ -431,15 +758,18 @@
             elements.addSkillBtn.addEventListener('click', () => handleAddItem('skill'));
             elements.addEducationBtn.addEventListener('click', () => handleAddItem('education'));
             elements.addHobbyBtn.addEventListener('click', () => handleAddItem('hobby'));
+            elements.addExperienceBtn.addEventListener('click', () => handleAddItem('experience')); 
+            elements.addReferenceBtn.addEventListener('click', () => handleAddItem('reference')); 
 
-            // Attach listener to export button - Added console log for debugging confirmation
+            // Attach listener to export button
             document.getElementById('export-button').addEventListener('click', () => {
                 console.log('Export button clicked. Opening print dialog...');
                 window.print();
             });
 
-            // Initialize the inputs and the CV preview with the mock data
+            // Initialize the inputs, the section order UI, and the CV preview
             initInputs();
+            initSectionOrderUI(); // Initialize the draggable list and visibility toggles
             renderCV();
         };
 
