@@ -6,6 +6,8 @@
     <title>Minimalist CV Builder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <!-- ADDED FONT AWESOME V4.7.0 CDN for reliable icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
         /* Custom CSS to ensure the CV looks exactly like a printed page and for print optimization */
         body {
@@ -17,8 +19,7 @@
         /* CV container styling to mimic A4 width */
         #cv-output {
             background-color: white;
-            /* UPDATED: Reduced top/bottom padding from 2.5in to 0.75in */
-            padding: 0.75in 0.75in; /* Standard margins (top/bottom, left/right) */
+            padding: 0; /* REMOVED PADDING to allow banners to span full width */
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
             min-height: 11in; /* Approximate A4 height */
         }
@@ -31,7 +32,7 @@
             #cv-output {
                 /* Reset for print mode */
                 box-shadow: none;
-                padding: 0.75in; /* Standard print margin */
+                padding: 0; /* No padding in print mode to allow full bleed headers */
                 margin: 0;
                 min-height: 0;
                 width: 100%;
@@ -39,7 +40,7 @@
             }
         }
 
-        /* Custom line for section headers to match the provided CV style */
+        /* Custom line for section headers (used below the contact banner) */
         .section-divider {
             border-bottom: 2px solid #374151; /* Dark Gray border */
             padding-bottom: 0.25rem;
@@ -49,6 +50,12 @@
         /* Input field styling */
         input[type="text"], textarea {
             border-color: #d1d5db;
+        }
+
+        /* Class for internal section padding (simulating margins for the body text) */
+        .cv-section-content {
+            padding-left: 0.75in;
+            padding-right: 0.75in;
         }
     </style>
 </head>
@@ -118,23 +125,50 @@
         <div class="lg:col-span-2 flex justify-center">
             <div id="cv-output" class="w-full max-w-3xl rounded-lg">
 
-                <!-- 1. NAME AND CONTACT -->
-                <header id="cv-header" class="mb-8">
-                    <h1 id="cv-name" class="text-4xl font-extrabold tracking-tight mb-2 text-gray-900">JANE DOE</h1>
-                    <div id="cv-contact" class="text-sm text-gray-600 space-y-0.5">
-                        <p id="cv-email">jane.doe@example.com</p>
-                        <p id="cv-phone">(555) 123-4567</p>
-                        <p id="cv-address">San Francisco, CA 94107</p>
+                <!-- 1. NAME AND CONTACT - NEW BANNER STRUCTURE -->
+                <header id="cv-header" class="mb-0">
+                    <!-- Top Banner: Name (Light blue/grey background) -->
+                    <div class="bg-blue-50/70 p-6 pt-10 text-center">
+                        <h1 id="cv-name" class="text-4xl sm:text-5xl font-extrabold tracking-wide text-gray-900">JANE DOE</h1>
+                    </div>
+
+                    <!-- Bottom Banner: Contact Details (Dark gray background) -->
+                    <div class="bg-gray-800 p-3 text-white">
+                        <!-- UPDATED: Using flex justify-between and explicit padding (px-12 for approx. 0.75in) to align items left, center, and right. -->
+                        <div id="cv-contact" class="flex justify-between items-center text-sm font-light px-12">
+                            
+                            <!-- Email (Left-aligned) -->
+                            <div id="cv-email-wrapper" class="flex items-center space-x-2">
+                                <!-- Font Awesome Email Icon -->
+                                <i class="fa fa-envelope text-blue-300 text-lg"></i>
+                                <span id="cv-email">jane.doe@example.com</span>
+                            </div>
+
+                            <!-- Phone (Center-aligned) -->
+                            <div id="cv-phone-wrapper" class="flex items-center space-x-2">
+                                <!-- Font Awesome Phone Icon -->
+                                <i class="fa fa-phone text-blue-300 text-lg"></i>
+                                <span id="cv-phone">(555) 123-4567</span>
+                            </div>
+
+                            <!-- Address (Right-aligned) -->
+                            <div id="cv-address-wrapper" class="flex items-center space-x-2">
+                                <!-- Font Awesome Location Icon -->
+                                <i class="fa fa-map-marker text-blue-300 text-lg"></i>
+                                <span id="cv-address">San Francisco, CA 94107</span>
+                            </div>
+                        </div>
                     </div>
                 </header>
 
-                <!-- 2. SUMMARY -->
-                <section id="cv-summary" class="mb-8 text-base leading-relaxed text-gray-700">
-                    <p>A highly motivated and adaptable recent graduate seeking an entry-level position to apply academic knowledge and keen problem-solving skills in a professional environment. Eager to contribute to team success while developing practical experience.</p>
+                <!-- 2. SUMMARY (TITLE ADDED HERE) -->
+                <section id="cv-summary" class="mb-8 pt-6 cv-section-content">
+                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">SUMMARY</h2>
+                    <p class="pt-2 text-base leading-relaxed text-gray-700">A highly motivated and adaptable recent graduate seeking an entry-level position to apply academic knowledge and keen problem-solving skills in a professional environment. Eager to contribute to team success while developing practical experience.</p>
                 </section>
 
                 <!-- 3. SKILLS -->
-                <section id="cv-skills" class="mb-8">
+                <section id="cv-skills" class="mb-8 cv-section-content">
                     <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">SKILLS</h2>
                     <ul id="skills-list" class="list-disc list-outside ml-5 space-y-1 text-base text-gray-700">
                         <li>Strong Communication</li>
@@ -145,7 +179,7 @@
                 </section>
 
                 <!-- 4. EDUCATION -->
-                <section id="cv-education" class="mb-8">
+                <section id="cv-education" class="mb-8 cv-section-content">
                     <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">EDUCATION</h2>
                     <div id="education-list" class="space-y-4 text-base text-gray-700">
                         <!-- Example education item -->
@@ -167,7 +201,7 @@
                 </section>
 
                 <!-- 5. HOBBIES AND INTERESTS -->
-                <section id="cv-hobbies">
+                <section id="cv-hobbies" class="cv-section-content">
                     <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">HOBBIES AND INTERESTS</h2>
                     <ul id="hobbies-list" class="list-disc list-outside ml-5 space-y-1 text-base text-gray-700">
                         <li>Photography</li>
@@ -241,7 +275,9 @@
                         <p class="font-semibold">${edu.details}</p>
                         <p class="text-sm text-gray-600">${edu.institution}</p>
                     </div>
-                    <p class="w-20 text-right sm:text-left text-sm font-medium">${edu.year}</p>
+                    <p class="w-20 text-right sm:text-left text-sm font-medium">
+                        ${edu.year}
+                    </p>
                 </div>
             `).join('');
 
