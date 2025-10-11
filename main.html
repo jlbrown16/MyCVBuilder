@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalist CV Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS to ensure the CV looks exactly like a printed page and for print optimization */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f4f5; /* Zinc 100 for background */
+            min-height: 100vh;
+        }
+
+        /* CV container styling to mimic A4 width */
+        #cv-output {
+            background-color: white;
+            /* UPDATED: Reduced top/bottom padding from 2.5in to 0.75in */
+            padding: 0.75in 0.75in; /* Standard margins (top/bottom, left/right) */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+            min-height: 11in; /* Approximate A4 height */
+        }
+
+        /* Hides the editor and print button when printing */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            #cv-output {
+                /* Reset for print mode */
+                box-shadow: none;
+                padding: 0.75in; /* Standard print margin */
+                margin: 0;
+                min-height: 0;
+                width: 100%;
+                max-width: none;
+            }
+        }
+
+        /* Custom line for section headers to match the provided CV style */
+        .section-divider {
+            border-bottom: 2px solid #374151; /* Dark Gray border */
+            padding-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Input field styling */
+        input[type="text"], textarea {
+            border-color: #d1d5db;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Editor Panel (No-Print) -->
+        <div id="editor-panel" class="lg:col-span-1 no-print bg-white p-6 rounded-lg shadow-xl h-fit sticky top-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">CV Editor</h2>
+            <p class="text-sm text-gray-500 mb-6">Enter your details below. The preview updates instantly.</p>
+
+            <form id="cv-form" class="space-y-4">
+                <!-- Personal Info -->
+                <fieldset class="border border-gray-200 p-4 rounded-md">
+                    <legend class="text-md font-semibold text-gray-700 px-1">Personal Details</legend>
+                    <input type="text" id="name" placeholder="Full Name (e.g., JANE DOE)" class="w-full p-2 border rounded-md" value="JANE DOE" required>
+                    <input type="text" id="email" placeholder="Email (e.g., jane.doe@example.com)" class="w-full p-2 border rounded-md" value="jane.doe@example.com">
+                    <input type="text" id="phone" placeholder="Phone (e.g., (555) 123-4567)" class="w-full p-2 border rounded-md" value="(555) 123-4567">
+                    <input type="text" id="address" placeholder="Address (e.g., San Francisco, CA 94107)" class="w-full p-2 border rounded-md" value="San Francisco, CA 94107">
+                </fieldset>
+
+                <!-- Summary -->
+                <fieldset class="border border-gray-200 p-4 rounded-md">
+                    <legend class="text-md font-semibold text-gray-700 px-1">Summary Statement</legend>
+                    <textarea id="summary" placeholder="Your personal statement / career objective." rows="4" class="w-full p-2 border rounded-md" required>A highly motivated and adaptable recent graduate seeking an entry-level position to apply academic knowledge and keen problem-solving skills in a professional environment. Eager to contribute to team success while developing practical experience.</textarea>
+                </fieldset>
+
+                <!-- Skills -->
+                <fieldset class="border border-gray-200 p-4 rounded-md">
+                    <legend class="text-md font-semibold text-gray-700 px-1">Skills</legend>
+                    <div id="skills-container" class="space-y-2">
+                        <!-- Dynamic skills will be added here -->
+                    </div>
+                    <button type="button" id="add-skill-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Skill</button>
+                </fieldset>
+
+                <!-- Education -->
+                <fieldset class="border border-gray-200 p-4 rounded-md">
+                    <legend class="text-md font-semibold text-gray-700 px-1">Education</legend>
+                    <div id="education-container" class="space-y-3">
+                        <!-- Dynamic education will be added here -->
+                    </div>
+                    <button type="button" id="add-education-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Education</button>
+                </fieldset>
+
+                <!-- Hobbies -->
+                <fieldset class="border border-gray-200 p-4 rounded-md">
+                    <legend class="text-md font-semibold text-gray-700 px-1">Hobbies & Interests</legend>
+                    <div id="hobbies-container" class="space-y-2">
+                        <!-- Dynamic hobbies will be added here -->
+                    </div>
+                    <button type="button" id="add-hobby-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Hobby</button>
+                </fieldset>
+
+            </form>
+
+            <!-- Export Button -->
+            <button id="export-button" class="mt-6 w-full bg-green-600 text-white font-bold p-3 rounded-xl shadow-lg hover:bg-green-700 transition duration-200">
+                Export to PDF (Print)
+            </button>
+            <p class="text-xs text-gray-500 mt-2 text-center">In the print dialog, select "Save as PDF".</p>
+
+        </div>
+
+        <!-- CV Preview (Main content area) -->
+        <div class="lg:col-span-2 flex justify-center">
+            <div id="cv-output" class="w-full max-w-3xl rounded-lg">
+
+                <!-- 1. NAME AND CONTACT -->
+                <header id="cv-header" class="mb-8">
+                    <h1 id="cv-name" class="text-4xl font-extrabold tracking-tight mb-2 text-gray-900">JANE DOE</h1>
+                    <div id="cv-contact" class="text-sm text-gray-600 space-y-0.5">
+                        <p id="cv-email">jane.doe@example.com</p>
+                        <p id="cv-phone">(555) 123-4567</p>
+                        <p id="cv-address">San Francisco, CA 94107</p>
+                    </div>
+                </header>
+
+                <!-- 2. SUMMARY -->
+                <section id="cv-summary" class="mb-8 text-base leading-relaxed text-gray-700">
+                    <p>A highly motivated and adaptable recent graduate seeking an entry-level position to apply academic knowledge and keen problem-solving skills in a professional environment. Eager to contribute to team success while developing practical experience.</p>
+                </section>
+
+                <!-- 3. SKILLS -->
+                <section id="cv-skills" class="mb-8">
+                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">SKILLS</h2>
+                    <ul id="skills-list" class="list-disc list-outside ml-5 space-y-1 text-base text-gray-700">
+                        <li>Strong Communication</li>
+                        <li>Time Management</li>
+                        <li>Data Analysis (Basic)</li>
+                        <li>Software Proficiency (MS Office, Figma)</li>
+                    </ul>
+                </section>
+
+                <!-- 4. EDUCATION -->
+                <section id="cv-education" class="mb-8">
+                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">EDUCATION</h2>
+                    <div id="education-list" class="space-y-4 text-base text-gray-700">
+                        <!-- Example education item -->
+                        <div class="education-item flex flex-col sm:flex-row justify-between">
+                            <div class="flex-1">
+                                <p class="font-semibold">B.A. in Communications</p>
+                            <p class="text-sm">City University</p>
+                            </div>
+                            <p class="w-20 text-right sm:text-left text-sm font-medium">2024</p>
+                        </div>
+                        <div class="education-item flex flex-col sm:flex-row justify-between">
+                            <div class="flex-1">
+                                <p class="font-semibold">High School Diploma</p>
+                                <p class="text-sm">Central High School</p>
+                            </div>
+                            <p class="w-20 text-right sm:text-left text-sm font-medium">2020</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. HOBBIES AND INTERESTS -->
+                <section id="cv-hobbies">
+                    <h2 class="text-lg font-bold uppercase text-gray-800 section-divider">HOBBIES AND INTERESTS</h2>
+                    <ul id="hobbies-list" class="list-disc list-outside ml-5 space-y-1 text-base text-gray-700">
+                        <li>Photography</li>
+                        <li>Hiking and Outdoors</li>
+                        <li>Volunteering at Local Shelter</li>
+                    </ul>
+                </section>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cvData = {
+            name: "JANE DOE",
+            email: "jane.doe@example.com",
+            phone: "(555) 123-4567",
+            address: "San Francisco, CA 94107",
+            summary: "A highly motivated and adaptable recent graduate seeking an entry-level position to apply academic knowledge and keen problem-solving skills in a professional environment. Eager to contribute to team success while developing practical experience.",
+            skills: ["Strong Communication", "Time Management", "Data Analysis (Basic)", "Software Proficiency (MS Office, Figma)"],
+            education: [
+                { year: "2024", details: "B.A. in Communications", institution: "City University" },
+                { year: "2020", details: "High School Diploma", institution: "Central High School" }
+            ],
+            hobbies: ["Photography", "Hiking and Outdoors", "Volunteering at Local Shelter"]
+        };
+
+        const elements = {
+            // Inputs
+            nameInput: document.getElementById('name'),
+            emailInput: document.getElementById('email'),
+            phoneInput: document.getElementById('phone'),
+            addressInput: document.getElementById('address'),
+            summaryInput: document.getElementById('summary'),
+            addSkillBtn: document.getElementById('add-skill-btn'),
+            addEducationBtn: document.getElementById('add-education-btn'),
+            addHobbyBtn: document.getElementById('add-hobby-btn'),
+
+            // CV Output Elements
+            cvName: document.getElementById('cv-name'),
+            cvEmail: document.getElementById('cv-email'),
+            cvPhone: document.getElementById('cv-phone'),
+            cvAddress: document.getElementById('cv-address'),
+            cvSummary: document.getElementById('cv-summary').querySelector('p'),
+            skillsContainer: document.getElementById('skills-container'),
+            skillsList: document.getElementById('skills-list'),
+            educationContainer: document.getElementById('education-container'),
+            educationList: document.getElementById('education-list'),
+            hobbiesContainer: document.getElementById('hobbies-container'),
+            hobbiesList: document.getElementById('hobbies-list'),
+        };
+
+        // --- Core Rendering Function ---
+        const renderCV = () => {
+            // 1. Personal Info
+            elements.cvName.textContent = cvData.name.toUpperCase() || 'YOUR NAME';
+            elements.cvEmail.textContent = cvData.email || 'your.email@example.com';
+            elements.cvPhone.textContent = cvData.phone || 'Your Phone Number';
+            elements.cvAddress.textContent = cvData.address || 'Your Address';
+            elements.cvSummary.textContent = cvData.summary || 'Your professional summary goes here...';
+
+            // 2. Skills
+            elements.skillsList.innerHTML = cvData.skills.map(skill =>
+                `<li>${skill}</li>`
+            ).join('');
+
+            // 3. Education
+            elements.educationList.innerHTML = cvData.education.map(edu => `
+                <div class="education-item flex flex-col sm:flex-row justify-between">
+                    <div class="flex-1">
+                        <p class="font-semibold">${edu.details}</p>
+                        <p class="text-sm text-gray-600">${edu.institution}</p>
+                    </div>
+                    <p class="w-20 text-right sm:text-left text-sm font-medium">${edu.year}</p>
+                </div>
+            `).join('');
+
+            // 4. Hobbies
+            elements.hobbiesList.innerHTML = cvData.hobbies.map(hobby =>
+                `<li>${hobby}</li>`
+            ).join('');
+        };
+
+        // --- Data Initialization and Update ---
+
+        // Function to initialize input fields with existing data
+        const initInputs = () => {
+            elements.nameInput.value = cvData.name;
+            elements.emailInput.value = cvData.email;
+            elements.phoneInput.value = cvData.phone;
+            elements.addressInput.value = cvData.address;
+            elements.summaryInput.value = cvData.summary;
+
+            // Render dynamic sections' input fields
+            renderDynamicInputs('skill', cvData.skills, elements.skillsContainer);
+            renderDynamicInputs('education', cvData.education, elements.educationContainer);
+            renderDynamicInputs('hobby', cvData.hobbies, elements.hobbiesContainer);
+        };
+
+        // General function to create input fields for dynamic arrays
+        const renderDynamicInputs = (type, dataArray, container) => {
+            container.innerHTML = '';
+            dataArray.forEach((item, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = `flex space-x-2 ${type}-item-wrapper mb-2`; /* Added mb-2 for spacing */
+
+                if (type === 'skill' || type === 'hobby') {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = type === 'skill' ? 'Skill description' : 'Hobby description';
+                    input.className = 'flex-1 p-2 border rounded-md text-sm';
+                    input.value = item;
+                    input.dataset.index = index;
+                    input.dataset.type = type;
+                    input.addEventListener('input', handleDynamicInput);
+                    wrapper.appendChild(input);
+                } else if (type === 'education') {
+                    // Education requires three inputs
+                    const eduWrapper = document.createElement('div');
+                    eduWrapper.className = 'w-full space-y-1';
+                    eduWrapper.innerHTML = `
+                        <input type="text" placeholder="Year (e.g., 2025)" class="w-full p-2 border rounded-md text-sm" data-field="year" value="${item.year}">
+                        <input type="text" placeholder="Qualification (e.g., A-Levels, Maths)" class="w-full p-2 border rounded-md text-sm" data-field="details" value="${item.details}">
+                        <input type="text" placeholder="Institution (e.g., Guiseley High School, Leeds)" class="w-full p-2 border rounded-md text-sm" data-field="institution" value="${item.institution}">
+                    `;
+                    Array.from(eduWrapper.querySelectorAll('input')).forEach(input => {
+                        input.dataset.index = index;
+                        input.dataset.type = type;
+                        input.addEventListener('input', handleDynamicInput);
+                    });
+                    wrapper.appendChild(eduWrapper);
+                }
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.type = 'button';
+                deleteBtn.className = 'bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition duration-150 w-8 h-8 text-sm flex items-center justify-center';
+                deleteBtn.textContent = 'X';
+                deleteBtn.dataset.index = index;
+                deleteBtn.dataset.type = type;
+                deleteBtn.addEventListener('click', handleDeleteItem);
+                wrapper.appendChild(deleteBtn);
+
+                container.appendChild(wrapper);
+            });
+        };
+
+        // Handle input for text fields (Name, Email, Summary, etc.)
+        const handleStaticInput = (e) => {
+            const key = e.target.id;
+            cvData[key] = e.target.value;
+            renderCV();
+        };
+
+        // Handle input for dynamic array fields (Skills, Education, Hobbies)
+        const handleDynamicInput = (e) => {
+            const { type, index, field } = e.target.dataset;
+            const value = e.target.value;
+            const idx = parseInt(index);
+
+            if (type === 'skill' || type === 'hobby') {
+                cvData[type + 's'][idx] = value; // Update the string directly
+            } else if (type === 'education') {
+                cvData.education[idx][field] = value; // Update the object property
+            }
+
+            renderCV();
+        };
+
+        // Handle button clicks for adding new items
+        const handleAddItem = (type) => {
+            if (type === 'skill') {
+                cvData.skills.push("New Skill");
+                renderDynamicInputs('skill', cvData.skills, elements.skillsContainer);
+            } else if (type === 'education') {
+                cvData.education.push({ year: "Year", details: "Qualification/Course", institution: "Institution Name" });
+                renderDynamicInputs('education', cvData.education, elements.educationContainer);
+            } else if (type === 'hobby') {
+                cvData.hobbies.push("New Hobby/Interest");
+                renderDynamicInputs('hobby', cvData.hobbies, elements.hobbiesContainer);
+            }
+            renderCV();
+        };
+
+        // Handle button clicks for deleting items
+        const handleDeleteItem = (e) => {
+            const { type, index } = e.target.dataset;
+            const idx = parseInt(index);
+
+            if (type === 'skill') {
+                cvData.skills.splice(idx, 1);
+                renderDynamicInputs('skill', cvData.skills, elements.skillsContainer);
+            } else if (type === 'education') {
+                cvData.education.splice(idx, 1);
+                renderDynamicInputs('education', cvData.education, elements.educationContainer);
+            } else if (type === 'hobby') {
+                cvData.hobbies.splice(idx, 1);
+                renderDynamicInputs('hobby', cvData.hobbies, elements.hobbiesContainer);
+            }
+            renderCV();
+        };
+
+
+        // --- Event Listeners Setup ---
+        const initApp = () => {
+            // Attach listeners to static inputs
+            document.querySelectorAll('#name, #email, #phone, #address, #summary').forEach(input => {
+                input.addEventListener('input', handleStaticInput);
+            });
+
+            // Attach listeners to add buttons
+            elements.addSkillBtn.addEventListener('click', () => handleAddItem('skill'));
+            elements.addEducationBtn.addEventListener('click', () => handleAddItem('education'));
+            elements.addHobbyBtn.addEventListener('click', () => handleAddItem('hobby'));
+
+            // Attach listener to export button - Added console log for debugging confirmation
+            document.getElementById('export-button').addEventListener('click', () => {
+                console.log('Export button clicked. Opening print dialog...');
+                window.print();
+            });
+
+            // Initialize the inputs and the CV preview with the mock data
+            initInputs();
+            renderCV();
+        };
+
+        window.onload = initApp;
+
+    </script>
+</body>
+</html>
