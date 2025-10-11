@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <!-- ADDED FONT AWESOME V4.7.0 CDN for reliable icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-latest.min.css">
     <style>
         /* Custom CSS to ensure the CV looks exactly like a printed page and for print optimization */
         body {
@@ -49,6 +49,11 @@
                 width: 100%;
                 max-width: none;
             }
+            /* Ensure the CV body is flush for printing */
+            #cv-output .cv-section-content {
+                padding-left: 0.75in !important;
+                padding-right: 0.75in !important;
+            }
         }
 
         /* Custom line for section headers (used below the contact banner) */
@@ -89,94 +94,109 @@
 
     <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        <!-- Editor Panel (No-Print) -->
-        <div id="editor-panel" class="lg:col-span-1 no-print bg-white p-6 rounded-lg shadow-xl h-fit sticky top-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">CV Editor</h2>
-            <p class="text-sm text-gray-500 mb-6">Enter your details below. The preview updates instantly.</p>
-
-            <form id="cv-form" class="space-y-4">
-                
-                <!-- Section Ordering and Visibility Control -->
-                <fieldset class="border border-gray-200 p-4 rounded-md bg-yellow-50/50">
-                    <legend class="text-md font-semibold text-gray-700 px-1">Section Order & Visibility</legend>
-                    <p class="text-xs text-gray-600 mb-2">Check to enable, drag to reorder.</p>
-                    <div id="section-order-list" class="space-y-2">
-                        <!-- Draggable list items for sections will be rendered here -->
-                    </div>
-                </fieldset>
-
-                <!-- Personal Info -->
-                <fieldset class="border border-gray-200 p-4 rounded-md">
-                    <legend class="text-md font-semibold text-gray-700 px-1">Personal Details</legend>
-                    <input type="text" id="name" placeholder="Full Name (e.g., JANE DOE)" class="w-full p-2 border rounded-md" value="ELEANOR SMITH" required>
-                    <input type="text" id="email" placeholder="Email (e.g., jane.doe@example.com)" class="w-full p-2 border rounded-md" value="eleanor.smith@example.co.uk">
-                    <input type="text" id="phone" placeholder="Phone (e.g., (555) 123-4567)" class="w-full p-2 border rounded-md" value="07700 900000">
-                    <input type="text" id="address" placeholder="Address (e.g., San Francisco, CA 94107)" class="w-full p-2 border rounded-md" value="Leeds, West Yorkshire, LS1 3AB">
-                </fieldset>
-
-                <!-- Summary -->
-                <fieldset class="border border-gray-200 p-4 rounded-md">
-                    <legend class="text-md font-semibold text-gray-700 px-1">Summary Statement</legend>
-                    <textarea id="summary" placeholder="Your personal statement / career objective." rows="4" class="w-full p-2 border rounded-md" required>A highly motivated and adaptable recent graduate seeking an entry-level position to apply academic knowledge and keen problem-solving skills in a professional environment. Eager to contribute to team success while developing practical experience.</textarea>
-                </fieldset>
-
-                <!-- Skills -->
-                <fieldset class="border border-gray-200 p-4 rounded-md">
-                    <legend class="text-md font-semibold text-gray-700 px-1">Skills</legend>
-                    <div id="skills-container" class="space-y-2">
-                        <!-- Dynamic skills will be added here -->
-                    </div>
-                    <button type="button" id="add-skill-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Skill</button>
-                </fieldset>
-                
-                <!-- Work Experience -->
-                <fieldset class="border border-gray-200 p-4 rounded-md">
-                    <legend class="text-md font-semibold text-gray-700 px-1">Work Experience</legend>
-                    <div id="experience-container" class="space-y-3">
-                        <!-- Dynamic experience will be added here -->
-                    </div>
-                    <button type="button" id="add-experience-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Experience</button>
-                </fieldset>
-
-                <!-- Education -->
-                <fieldset class="border border-gray-200 p-4 rounded-md">
-                    <legend class="text-md font-semibold text-gray-700 px-1">Education</legend>
-                    <div id="education-container" class="space-y-3">
-                        <!-- Dynamic education will be added here -->
-                    </div>
-                    <button type="button" id="add-education-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Education</button>
-                </fieldset>
-
-                <!-- References (NEW SECTION) -->
-                <fieldset class="border border-gray-200 p-4 rounded-md">
-                    <legend class="text-md font-semibold text-gray-700 px-1">References</legend>
-                    <div id="references-container" class="space-y-3">
-                        <!-- Dynamic references will be added here -->
-                    </div>
-                    <button type="button" id="add-reference-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Reference</button>
-                </fieldset>
-
-                <!-- Hobbies -->
-                <fieldset class="border border-gray-200 p-4 rounded-md">
-                    <legend class="text-md font-semibold text-gray-700 px-1">Hobbies & Interests</legend>
-                    <div id="hobbies-container" class="space-y-2">
-                        <!-- Dynamic hobbies will be added here -->
-                    </div>
-                    <button type="button" id="add-hobby-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Hobby</button>
-                </fieldset>
-
-            </form>
-
-            <!-- Export Button -->
-            <button id="export-button" class="mt-6 w-full bg-green-600 text-white font-bold p-3 rounded-xl shadow-lg hover:bg-green-700 transition duration-200">
-                Export to PDF (Print)
+        <!-- Mobile Toggle Buttons (Only visible on screens < 1024px) -->
+        <div id="mobile-toggle" class="lg:hidden col-span-1 sticky top-0 z-10 bg-white p-3 shadow-md rounded-b-lg flex justify-around no-print">
+            <button id="toggle-editor-btn" class="flex-1 py-2 rounded-lg font-bold transition-all duration-200 shadow-md mr-1">
+                Editor
             </button>
-            <p class="text-xs text-gray-500 mt-2 text-center">In the print dialog, select "Save as PDF".</p>
-
+            <button id="toggle-preview-btn" class="flex-1 py-2 rounded-lg font-bold transition-all duration-200 shadow-md ml-1">
+                Preview
+            </button>
         </div>
 
-        <!-- CV Preview (Main content area) -->
-        <div class="lg:col-span-2 flex justify-center">
+
+        <!-- Editor Panel Wrapper -->
+        <!-- Hidden by default on mobile, shown by JS/Tailwind if active, always shown on lg: -->
+        <div id="editor-panel-wrapper" class="lg:col-span-1"> 
+            <div id="editor-panel" class="no-print bg-white p-6 rounded-lg shadow-xl h-fit lg:sticky lg:top-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">CV Editor</h2>
+                <p class="text-sm text-gray-500 mb-6">Enter your details below. The preview updates instantly.</p>
+
+                <form id="cv-form" class="space-y-4">
+                    
+                    <!-- Section Ordering and Visibility Control -->
+                    <fieldset class="border border-gray-200 p-4 rounded-md bg-yellow-50/50">
+                        <legend class="text-md font-semibold text-gray-700 px-1">Section Order & Visibility</legend>
+                        <p class="text-xs text-gray-600 mb-2">Check to enable, drag to reorder.</p>
+                        <div id="section-order-list" class="space-y-2">
+                            <!-- Draggable list items for sections will be rendered here -->
+                        </div>
+                    </fieldset>
+
+                    <!-- Personal Info -->
+                    <fieldset class="border border-gray-200 p-4 rounded-md">
+                        <legend class="text-md font-semibold text-gray-700 px-1">Personal Details</legend>
+                        <input type="text" id="name" placeholder="Full Name (e.g., JANE DOE)" class="w-full p-2 border rounded-md" value="ELEANOR SMITH" required>
+                        <input type="text" id="email" placeholder="Email (e.g., jane.doe@example.com)" class="w-full p-2 border rounded-md" value="eleanor.smith@example.co.uk">
+                        <input type="text" id="phone" placeholder="Phone (e.g., (555) 123-4567)" class="w-full p-2 border rounded-md" value="07700 900000">
+                        <input type="text" id="address" placeholder="Address (e.g., San Francisco, CA 94107)" class="w-full p-2 border rounded-md" value="Leeds, West Yorkshire, LS1 3AB">
+                    </fieldset>
+
+                    <!-- Summary -->
+                    <fieldset class="border border-gray-200 p-4 rounded-md">
+                        <legend class="text-md font-semibold text-gray-700 px-1">Summary Statement</legend>
+                        <textarea id="summary" placeholder="Your personal statement / career objective." rows="4" class="w-full p-2 border rounded-md" required>A highly motivated and adaptable recent graduate seeking an entry-level position to apply academic knowledge and keen problem-solving skills in a professional environment. Eager to contribute to team success while developing practical experience.</textarea>
+                    </fieldset>
+
+                    <!-- Skills -->
+                    <fieldset class="border border-gray-200 p-4 rounded-md">
+                        <legend class="text-md font-semibold text-gray-700 px-1">Skills</legend>
+                        <div id="skills-container" class="space-y-2">
+                            <!-- Dynamic skills will be added here -->
+                        </div>
+                        <button type="button" id="add-skill-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Skill</button>
+                    </fieldset>
+                    
+                    <!-- Work Experience -->
+                    <fieldset class="border border-gray-200 p-4 rounded-md">
+                        <legend class="text-md font-semibold text-gray-700 px-1">Work Experience</legend>
+                        <div id="experience-container" class="space-y-3">
+                            <!-- Dynamic experience will be added here -->
+                        </div>
+                        <button type="button" id="add-experience-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Experience</button>
+                    </fieldset>
+
+                    <!-- Education -->
+                    <fieldset class="border border-gray-200 p-4 rounded-md">
+                        <legend class="text-md font-semibold text-gray-700 px-1">Education</legend>
+                        <div id="education-container" class="space-y-3">
+                            <!-- Dynamic education will be added here -->
+                        </div>
+                        <button type="button" id="add-education-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Education</button>
+                    </fieldset>
+
+                    <!-- References (NEW SECTION) -->
+                    <fieldset class="border border-gray-200 p-4 rounded-md">
+                        <legend class="text-md font-semibold text-gray-700 px-1">References</legend>
+                        <div id="references-container" class="space-y-3">
+                            <!-- Dynamic references will be added here -->
+                        </div>
+                        <button type="button" id="add-reference-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Reference</button>
+                    </fieldset>
+
+                    <!-- Hobbies -->
+                    <fieldset class="border border-gray-200 p-4 rounded-md">
+                        <legend class="text-md font-semibold text-gray-700 px-1">Hobbies & Interests</legend>
+                        <div id="hobbies-container" class="space-y-2">
+                            <!-- Dynamic hobbies will be added here -->
+                        </div>
+                        <button type="button" id="add-hobby-btn" class="mt-3 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-150 text-sm">+ Add Hobby</button>
+                    </fieldset>
+
+                </form>
+
+                <!-- Export Button -->
+                <button id="export-button" class="mt-6 w-full bg-green-600 text-white font-bold p-3 rounded-xl shadow-lg hover:bg-green-700 transition duration-200">
+                    Export to PDF (Print)
+                </button>
+                <p class="text-xs text-gray-500 mt-2 text-center">In the print dialog, select "Save as PDF".</p>
+
+            </div>
+        </div>
+
+        <!-- CV Preview Wrapper -->
+        <!-- Hidden by default on mobile, shown by JS/Tailwind if active, always shown on lg: -->
+        <div id="preview-panel-wrapper" class="lg:col-span-2 flex justify-center hidden lg:block"> 
             <!-- Renamed element to keep it simple, the contents will be dynamic -->
             <div id="cv-output" class="w-full max-w-3xl rounded-lg"> 
 
@@ -230,10 +250,8 @@
             // Updated to British examples
             name: "ELEANOR SMITH",
             email: "eleanor.smith@example.co.uk",
-            // TEST LONG EMAIL: "eleanor.smith.is.a.very.long.email.address.example@long-domain-name.co.uk",
             phone: "07700 900000",
             address: "Leeds, West Yorkshire, LS1 3AB", // UK Postcode format
-            // TEST LONG ADDRESS: "A very long multi-line street address, A really long village name, Leeds, West Yorkshire, LS1 3AB", 
             summary: "A highly motivated and adaptable recent graduate seeking an entry-level position to apply academic knowledge and keen problem-solving skills in a professional environment. Eager to contribute to team success while developing practical experience.",
             skills: ["Strong Communication", "Time Management", "Data Analysis (Basic)", "Software Proficiency (Microsoft Office, Adobe Suite)"],
             
@@ -252,7 +270,6 @@
             ],
             hobbies: ["Photography", "Hiking and Outdoors", "Volunteering at Local Animal Shelter"],
             
-            // NEW: References Data - added phone
             references: [
                 {
                     name: "Dr. Alistair Finch", 
@@ -276,6 +293,7 @@
 
 
         // --- SECTION RENDERING FUNCTIONS ---
+        // (Render functions remain the same as previous iteration)
 
         // 1. SUMMARY
         const renderSummary = () => `
@@ -416,6 +434,9 @@
         // Global variable to track the section being dragged
         let draggedSectionId = null;
 
+        // Global state for mobile view
+        let isEditorVisible = true;
+
 
         // DOM element references
         const elements = {
@@ -443,7 +464,58 @@
             educationContainer: document.getElementById('education-container'),
             hobbiesContainer: document.getElementById('hobbies-container'),
             referencesContainer: document.getElementById('references-container'), 
+
+            // Mobile Toggle Elements
+            editorWrapper: document.getElementById('editor-panel-wrapper'),
+            previewWrapper: document.getElementById('preview-panel-wrapper'),
+            toggleEditorBtn: document.getElementById('toggle-editor-btn'),
+            togglePreviewBtn: document.getElementById('toggle-preview-btn'),
         };
+
+        // --- MOBILE TOGGLE LOGIC (NEW) ---
+        const updateMobileView = () => {
+            // Only apply this logic on mobile view (when the toggle bar is present)
+            if (window.innerWidth < 1024) { 
+                if (isEditorVisible) {
+                    elements.editorWrapper.classList.remove('hidden');
+                    elements.previewWrapper.classList.add('hidden');
+                    
+                    // Button styling: Editor is active (blue), Preview is inactive (gray)
+                    elements.toggleEditorBtn.classList.add('bg-blue-600', 'text-white');
+                    elements.toggleEditorBtn.classList.remove('bg-gray-200', 'text-gray-800');
+                    elements.togglePreviewBtn.classList.add('bg-gray-200', 'text-gray-800');
+                    elements.togglePreviewBtn.classList.remove('bg-blue-600', 'text-white');
+                } else {
+                    elements.editorWrapper.classList.add('hidden');
+                    elements.previewWrapper.classList.remove('hidden');
+
+                    // Button styling: Preview is active (blue), Editor is inactive (gray)
+                    elements.toggleEditorBtn.classList.add('bg-gray-200', 'text-gray-800');
+                    elements.toggleEditorBtn.classList.remove('bg-blue-600', 'text-white');
+                    elements.togglePreviewBtn.classList.add('bg-blue-600', 'text-white');
+                    elements.togglePreviewBtn.classList.remove('bg-gray-200', 'text-gray-800');
+                }
+            } else {
+                // Ensure both are visible on desktop (lg and up)
+                elements.editorWrapper.classList.remove('hidden');
+                elements.previewWrapper.classList.remove('hidden');
+                // The styling for the buttons is managed in JS above, but if the toggle buttons
+                // themselves are hidden, we don't need to worry about their styling on desktop.
+            }
+        };
+
+        const handleToggleView = (view) => {
+            if (view === 'editor' && !isEditorVisible) {
+                isEditorVisible = true;
+            } else if (view === 'preview' && isEditorVisible) {
+                isEditorVisible = false;
+            }
+            updateMobileView();
+            // Scroll to the top when switching views for better UX
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        };
+        // --- END MOBILE TOGGLE LOGIC ---
+
 
         // --- DRAG AND DROP & VISIBILITY LOGIC ---
 
@@ -682,7 +754,7 @@
             const { type, index, field, detailsTextarea } = e.target.dataset;
             const value = e.target.value;
             const idx = parseInt(index);
-            const arrayKey = type + (type === 'reference' ? 's' : (type === 'experience' || type === 'education' ? '' : 's'));
+            // const arrayKey = type + (type === 'reference' ? 's' : (type === 'experience' || type === 'education' ? '' : 's'));
 
             if (type === 'skill' || type === 'hobby') {
                 cvData[type + 's'][idx] = value; 
@@ -767,10 +839,16 @@
                 window.print();
             });
 
+            // Attach mobile toggle listeners (NEW)
+            elements.toggleEditorBtn.addEventListener('click', () => handleToggleView('editor'));
+            elements.togglePreviewBtn.addEventListener('click', () => handleToggleView('preview'));
+            window.addEventListener('resize', updateMobileView); // Recalculate view on resize
+
             // Initialize the inputs, the section order UI, and the CV preview
             initInputs();
             initSectionOrderUI(); // Initialize the draggable list and visibility toggles
             renderCV();
+            updateMobileView(); // Set initial view state (editor active, preview hidden on mobile)
         };
 
         window.onload = initApp;
