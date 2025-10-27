@@ -10,6 +10,8 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lightweight HTML-to-PDF helper -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-YcsIP5lrx31P7xYuFeoJEB6Digw1VE3DybMT0SqnX+ANXoy0nhOii3W7KUD+rjKsImt9u0nZWSy5Ssy0p7wY0g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- Font Awesome CDN for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
@@ -89,6 +91,14 @@
                 flex-shrink: 1;
                 min-width: 150px; 
             }
+        }
+
+        /* Ensure html2pdf exports match the cleaned print view */
+        .cv-document.pdf-export-active {
+            box-shadow: none !important;
+            background: white !important;
+            margin: 0 !important;
+            padding: 24px !important;
         }
         /* Toggle Switch Custom Styling */
         .toggle-checkbox {
@@ -664,6 +674,54 @@
                 handleSave(newData);
               };
 
+              const handleDownloadPDF = () => {
+                if (!previewRef.current) return;
+                if (typeof window.html2pdf === 'undefined') {
+                  console.error('html2pdf library failed to load.');
+                  return;
+                }
+
+                const element = previewRef.current;
+                const name = cvData.personal?.name?.trim() || 'cv';
+                const safeName = name
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]+/g, '-')
+                  .replace(/(^-|-$)/g, '');
+                const filename = `${safeName || 'cv'}-resume.pdf`;
+                const removeClass = () => element.classList.remove('pdf-export-active');
+
+                element.classList.add('pdf-export-active');
+
+                const options = {
+                  margin: 0,
+                  filename,
+                  image: { type: 'jpeg', quality: 0.98 },
+                  html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+                  jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
+                  pagebreak: { mode: ['css', 'avoid-all'] },
+                };
+
+                try {
+                  const worker = window.html2pdf().set(options).from(element).save();
+
+                  if (worker && typeof worker.then === 'function') {
+                    worker
+                      .then(() => {
+                        removeClass();
+                      })
+                      .catch((error) => {
+                        console.error('Failed to export PDF', error);
+                        removeClass();
+                      });
+                  } else {
+                    removeClass();
+                  }
+                } catch (error) {
+                  console.error('Failed to export PDF', error);
+                  removeClass();
+                }
+              };
+
               const handlePrint = () => {
                 window.print();
               };
@@ -1022,14 +1080,24 @@
                         
                         {/* Print Button (Moved to bottom and made full width) */}
                         <div className="pt-6 border-t mt-6">
-                            <button
-                                onClick={handlePrint}
-                                className={`w-full bg-${primaryColorPrefix}-600 hover:bg-${primaryColorPrefix}-700 text-white font-bold py-3 rounded-lg shadow-xl transition duration-150 ease-in-out text-lg`}
-                                aria-label="Print CV"
-                            >
-                                <i className="fa-solid fa-print mr-2"></i>
-                                Generate PDF / Print CV
-                            </button>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <button
+                                    onClick={handleDownloadPDF}
+                                    className={`w-full sm:flex-1 bg-${primaryColorPrefix}-600 hover:bg-${primaryColorPrefix}-700 text-white font-bold py-3 rounded-lg shadow-xl transition duration-150 ease-in-out text-lg`}
+                                    aria-label="Download CV as PDF"
+                                >
+                                    <i className="fa-solid fa-file-arrow-down mr-2"></i>
+                                    Download PDF
+                                </button>
+                                <button
+                                    onClick={handlePrint}
+                                    className={`w-full sm:flex-1 bg-white text-${primaryColorPrefix}-600 border border-${primaryColorPrefix}-600 hover:bg-${primaryColorPrefix}-50 font-bold py-3 rounded-lg shadow-md transition duration-150 ease-in-out text-lg`}
+                                    aria-label="Print CV"
+                                >
+                                    <i className="fa-solid fa-print mr-2"></i>
+                                    Print
+                                </button>
+                            </div>
                         </div>
 
 
